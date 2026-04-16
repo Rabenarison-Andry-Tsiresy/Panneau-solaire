@@ -8,7 +8,8 @@ Projet vise à proposer panneau solaire + batterie pour les clients
   
   -usage:
    -consommation 24H
-   -6h-19h:consommation panneau solaire(recharge batterie incluse)
+   -6h-17h:consommation panneau solaire(puissance:40% recharge batterie incluse pendant l'usage panneau )
+   -17h-19h:consommation panneau (puissance:20% recharge batterie incluse pendant l'usage panneau)
    -19h-6h:consommation batterie
   
   -format appareil demande:

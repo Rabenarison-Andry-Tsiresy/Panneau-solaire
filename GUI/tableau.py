@@ -23,14 +23,8 @@ class TableauResultatFrame(ttk.LabelFrame):
 
         mapping = [
             ("Consommation 24h", f"{resultats['consommation_24h_wh']} Wh"),
-            ("Consommation jour (6h-19h)", f"{resultats['consommation_jour_wh']} Wh"),
-            ("Consommation nuit (19h-6h)", f"{resultats['consommation_nuit_wh']} Wh"),
-            ("Pic puissance jour", f"{resultats['pic_puissance_jour_w']} W"),
-            ("Pic puissance nuit", f"{resultats['pic_puissance_nuit_w']} W"),
             ("Panneau recommandé", f"{resultats['puissance_panneau_recommandee_w']} W"),
             ("Batterie recommandée", f"{resultats['capacite_batterie_recommandee_wh']} Wh"),
-            ("Batterie (12V)", f"{resultats['capacite_batterie_recommandee_ah_12v']} Ah"),
-            ("Batterie (24V)", f"{resultats['capacite_batterie_recommandee_ah_24v']} Ah"),
         ]
 
         for metrique, valeur in mapping:

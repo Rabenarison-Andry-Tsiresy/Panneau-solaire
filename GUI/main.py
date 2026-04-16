@@ -9,6 +9,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 from GUI.liste_appareil import ListeAppareilFrame
 from GUI.tableau import TableauResultatFrame
+from models.appareil import Appareil
 from utils.CalculFonction import CalculFonction
 from utils.Databaseconnection import DatabaseConnection
 
@@ -53,7 +54,7 @@ class Application(tk.Tk):
         self.status_var.set("Calcul terminé")
 
     def charger_db(self):
-        appareils, erreur = self.db.charger_appareils()
+        appareils, erreur = Appareil.charger_depuis_db(self.db)
         if erreur:
             self.status_var.set("Erreur DB")
             messagebox.showerror("DB", erreur)
@@ -64,7 +65,7 @@ class Application(tk.Tk):
 
     def sauvegarder_db(self):
         appareils = self.liste_frame.get_appareils()
-        ok, message = self.db.sauvegarder_appareils(appareils)
+        ok, message = Appareil.sauvegarder_dans_db(self.db, appareils)
         if ok:
             self.status_var.set("Sauvegarde DB OK")
             messagebox.showinfo("DB", message)
