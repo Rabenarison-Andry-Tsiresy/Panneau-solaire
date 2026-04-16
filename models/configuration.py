@@ -18,6 +18,12 @@ class ConfigurationCalcul:
     fraction_batterie_utilisable: float = 0.50
     marge_proposition_batterie: float = 0.75
 
+    # Nouveau mecanisme:
+    # Si True, la recharge batterie est supposee continue sur toute la plage panneau.
+    recharge_continue_en_journee: bool = True
+    # Permet de forcer une duree de recharge specifique (en heures), sinon calculee automatiquement.
+    duree_recharge_batterie_heures: float = 0.0
+
     secondes_par_jour: int = 24 * 3600
 
     @staticmethod

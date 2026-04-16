@@ -48,6 +48,17 @@ Contrainte energie:
 - Puissance mini par energie:
 - Ppv_energie = E_pv / H_eq
 
+Nouveau mecanisme (recharge continue en journee):
+- Puissance moyenne de recharge batterie:
+- P_recharge = Ebatt_nuit / t_recharge
+
+Avec ce mecanisme, la contrainte de pic devient:
+- Ppv_pic = max((Pic6_17 + P_recharge)/0.40, (Pic17_19 + P_recharge)/0.20)
+
+Ou:
+- t_recharge = duree de recharge batterie pendant la journee
+- Par defaut: t_recharge = duree(06:00->19:00) = 13h
+
 Proposition panneau:
 - Ppv_reco = max(Ppv_pic, Ppv_energie)
 
@@ -76,6 +87,8 @@ Parametres modifiables:
 - Facteur panneau fort/faible
 - Fraction batterie utilisable
 - Marge proposition batterie
+- recharge_continue_en_journee (active le nouveau mecanisme)
+- duree_recharge_batterie_heures (optionnel, pour forcer un t_recharge)
 
 Exemple d'utilisation:
 
@@ -94,6 +107,8 @@ config = ConfigurationCalcul(
 	facteur_panneau_faible=0.20,
 	fraction_batterie_utilisable=0.50,
 	marge_proposition_batterie=1.50,
+	recharge_continue_en_journee=True,
+	duree_recharge_batterie_heures=0.0,
 )
 
 calculateur = CalculFonction(configuration=config)

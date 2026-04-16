@@ -43,6 +43,12 @@ class CalculFonction:
     def _duree_plages_heures(plages: List[Tuple[int, int]]) -> float:
         return sum((fin - debut) / 3600.0 for debut, fin in plages)
 
+    def _duree_recharge_batterie_heures(self, plages_jour: List[Tuple[int, int]]) -> float:
+        duree_configuree = self.configuration.duree_recharge_batterie_heures
+        if duree_configuree and duree_configuree > 0:
+            return duree_configuree
+        return self._duree_plages_heures(plages_jour)
+
     def _pic_sur_plage_w(self, appareils: List[Appareil], plage: List[Tuple[int, int]]) -> float:
         pic = 0.0
         for plage_debut, plage_fin in plage:
@@ -81,12 +87,13 @@ class CalculFonction:
                 "capacite_batterie_recommandee_wh": 0.0,
             }
 
-        # Regle simplifiee:
-        # - Matin/jour: le panneau alimente les appareils ET recharge la batterie.
+        # Regle:
+        # - Jour: le panneau alimente les appareils + recharge la batterie.
         # - Nuit: la batterie alimente les appareils.
         plage_panneau_40 = self._plage_panneau_fort()
         plage_panneau_20 = self._plage_panneau_faible()
         plage_batterie_19_6 = self._plage_batterie()
+        plages_jour = plage_panneau_40 + plage_panneau_20
 
         energie_panneau_6_17_wh = self._energie_sur_plage_wh(appareils, plage_panneau_40)
         energie_panneau_17_19_wh = self._energie_sur_plage_wh(appareils, plage_panneau_20)
@@ -96,18 +103,40 @@ class CalculFonction:
         pic_charge_6_17_w = self._pic_sur_plage_w(appareils, plage_panneau_40)
         pic_charge_17_19_w = self._pic_sur_plage_w(appareils, plage_panneau_20)
 
-        puissance_panneau_min_pour_pic_w = max(
-            (
-                pic_charge_6_17_w / self.configuration.facteur_panneau_fort
-                if self.configuration.facteur_panneau_fort
-                else 0.0
-            ),
-            (
-                pic_charge_17_19_w / self.configuration.facteur_panneau_faible
-                if self.configuration.facteur_panneau_faible
-                else 0.0
-            ),
+        # Nouveau mecanisme d'approximation:
+        # Recharge batterie continue pendant la journee,
+        # P_recharge = E_nuit / t_recharge
+        duree_recharge_h = self._duree_recharge_batterie_heures(plages_jour)
+        puissance_recharge_batterie_w = (
+            energie_batterie_19_6_wh / duree_recharge_h if duree_recharge_h > 0 else 0.0
         )
+
+        if self.configuration.recharge_continue_en_journee:
+            puissance_panneau_min_pour_pic_w = max(
+                (
+                    (pic_charge_6_17_w + puissance_recharge_batterie_w) / self.configuration.facteur_panneau_fort
+                    if self.configuration.facteur_panneau_fort
+                    else 0.0
+                ),
+                (
+                    (pic_charge_17_19_w + puissance_recharge_batterie_w) / self.configuration.facteur_panneau_faible
+                    if self.configuration.facteur_panneau_faible
+                    else 0.0
+                ),
+            )
+        else:
+            puissance_panneau_min_pour_pic_w = max(
+                (
+                    pic_charge_6_17_w / self.configuration.facteur_panneau_fort
+                    if self.configuration.facteur_panneau_fort
+                    else 0.0
+                ),
+                (
+                    pic_charge_17_19_w / self.configuration.facteur_panneau_faible
+                    if self.configuration.facteur_panneau_faible
+                    else 0.0
+                ),
+            )
 
         heures_6_17 = self._duree_plages_heures(plage_panneau_40)
         heures_17_19 = self._duree_plages_heures(plage_panneau_20)
@@ -117,9 +146,7 @@ class CalculFonction:
         )
 
         # Formule electrique de base: E = P * t.
-        # L'energie a produire par le panneau comprend:
-        # 1) les charges connectees pendant la journee
-        # 2) l'energie necessaire pour recharger la batterie de la nuit
+        # Le panneau fournit les charges de jour + la recharge batterie pour la nuit.
         energie_charges_jour_wh = energie_panneau_6_17_wh + energie_panneau_17_19_wh
         energie_recharge_batterie_wh = energie_batterie_19_6_wh
         energie_a_fournir_par_panneau_wh = energie_charges_jour_wh + energie_recharge_batterie_wh

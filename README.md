@@ -36,3 +36,8 @@ Projet vise à proposer panneau solaire + batterie pour les clients
         -main.py : interface graphique pour l'utilisateur
         -tableau.py : classe pour afficher les résultats dans un tableau(panneau solaire et batterie proposés)
         -liste_appareil.py : classe pour afficher la liste des appareils fournis par le client(option ajout et supprimer aussi)
+
+
+#alea :
+   -panneau 1: pour tous les appareils en dessous du pic
+   -panneau 2: pour l'appareil avec la plus  de consommation(2*pic)
